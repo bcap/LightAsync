@@ -1,0 +1,23 @@
+LightAsync is:
+	- A Java API
+	- A way to utilize concurrent queues (Consumers & Producers)
+	- Simple (at least meant to be!)
+	- Lightweight
+	meant to be used:
+		- On simple applications that needs async processing
+		- On a local JVM, no remote stuff
+	not:
+		- A JMS implementation
+		- A server
+		- Complicated
+		- A banana
+		meant to be used:
+			- On transactional environments
+			- On clustered environments
+			- As toilet paper
+
+Thats it for now
+
+Thx,
+Bruno "Polaco"
+		
