@@ -3,6 +3,7 @@ LightAsync is:
 	- A way to utilize concurrent queues (Consumers & Producers)
 	- Simple (at least meant to be!)
 	- Lightweight
+	- A maven project
 	meant to be used:
 		- On simple applications that needs async processing
 		- On a local JVM, no remote stuff
