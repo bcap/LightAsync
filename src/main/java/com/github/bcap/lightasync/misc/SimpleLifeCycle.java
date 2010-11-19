@@ -6,4 +6,9 @@ public interface SimpleLifeCycle {
 
 	public void shutdown();
 	
+	public boolean isStarted();
+	
+	public boolean isShuttedDown();
+	
+	public boolean isAlive();
 }
