@@ -4,5 +4,6 @@ public interface Producer<T> {
 	
 	public boolean finished();
 	
-	public T produce(); 
+	public T produce();
+	
 }
