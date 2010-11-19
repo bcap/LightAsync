@@ -5,10 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.bcap.lightasync.misc.SimpleLifeCycle;
 
 public abstract class Queue<T> implements SimpleLifeCycle {
 
+	private static final Logger logger = LoggerFactory.getLogger(Queue.class);
+	
 	private List<Producer<T>> producers = new ArrayList<Producer<T>>();
 	private List<Consumer<T>> consumers = new ArrayList<Consumer<T>>();
 
