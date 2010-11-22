@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.bcap.lightasync.impl.OneShotQueue;
 import com.github.bcap.lightasync.misc.SimpleLifeCycle;
 
 public abstract class Queue<T> implements SimpleLifeCycle {
@@ -185,5 +186,13 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	protected abstract void stopProducer(Producer<T> producer);
 
 	protected abstract void stopConsumer(Consumer<T> consumer);
+	
+	public static <T> Queue<T> createQueue() {
+		return new OneShotQueue<T>();
+	}
+	
+	public static <T> Queue<T> createQueue(int maxSize) {
+		return new OneShotQueue<T>(maxSize);
+	}
 
 }
