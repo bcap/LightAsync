@@ -30,4 +30,15 @@ public class QueueMessage<T> {
 		this.retryDelay = retryDelay;
 	}
 
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("QueueMessage [retries=");
+		builder.append(retries);
+		builder.append(", retryDelay=");
+		builder.append(retryDelay);
+		builder.append(", content=");
+		builder.append(content);
+		builder.append("]");
+		return builder.toString();
+	}
 }
