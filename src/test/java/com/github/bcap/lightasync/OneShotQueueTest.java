@@ -54,18 +54,6 @@ public class OneShotQueueTest {
 		for(String producedElement : produced)
 			assertTrue(consumed.contains(producedElement));
 	}
-
-	private void waitFinish(List<TestConsumer> consumers) {
-		for(boolean finished = false; !finished;) {
-			finished = true;
-			for (TestConsumer consumer : consumers)
-				finished &= consumer.finished;
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-			}
-		}
-	}
 }
 
 class TestProducer implements Producer<String> {
