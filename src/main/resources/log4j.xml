@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
+<log4j:configuration>
+
+	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %5p [%t] [%C{1}] %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="file" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="lightasync.log" />
+		<param name="DatePattern" value="'.'yyyy-MM-dd" />
+		<param name="Append" value="false" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %5p [%t] [%C{1}] %m%n" />
+		</layout>
+	</appender>
+
+	<category name="org.springframework">
+		<level value="INFO" />
+	</category>
+	
+	<category name="org.apache.commons.httpclient">
+		<level value="INFO" />
+	</category>
+	
+	<category name="httpclient">
+		<level value="INFO" />
+	</category>
+	
+	<root>
+		<level value="DEBUG" />
+		<appender-ref ref="stdout" />
+<!--		<appender-ref ref="file" />-->
+	</root>
+
+</log4j:configuration>
