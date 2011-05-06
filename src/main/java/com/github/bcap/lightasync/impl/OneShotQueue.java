@@ -59,7 +59,7 @@ public class OneShotQueue<T> extends Queue<T> {
 		logger.debug("Consumer " + consumer + " successfully started, associated thread: " + thread.getName());
 	}
 
-	protected void startProducer(Producer<T> producer) {
+	protected void startProducer(Producer<? extends T> producer) {
 		
 		logger.debug("Starting producer " + producer);
 		
@@ -86,7 +86,7 @@ public class OneShotQueue<T> extends Queue<T> {
 		logger.debug("Consumer " + consumer + " successfully stopped");
 	}
 
-	protected void stopProducer(Producer<T> producer) {
+	protected void stopProducer(Producer<? extends T> producer) {
 		
 		logger.debug("Stopping producer " + producer);
 		
@@ -192,11 +192,11 @@ public class OneShotQueue<T> extends Queue<T> {
 
 	private class ProducerThread extends BaseThread {
 
-		protected Producer<T> producer;
+		protected Producer<? extends T> producer;
 
 		protected boolean finished = false;
 
-		public ProducerThread(Producer<T> producer) {
+		public ProducerThread(Producer<? extends T> producer) {
 			this.producer = producer;
 		}
 
