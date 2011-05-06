@@ -29,6 +29,9 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	public abstract Integer maxSize();
 
 	public void attachProducer(Producer<T> producer) {
+		
+		logger.debug("Attaching producer " + producer);
+		
 		if (this.isAlive())
 			this.startProducer(producer);
 
@@ -41,6 +44,9 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	}
 
 	public void attachConsumer(Consumer<T> consumer) {
+		
+		logger.debug("Attaching consumer " + consumer);
+		
 		if (this.isAlive())
 			this.startConsumer(consumer);
 
@@ -53,6 +59,9 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	}
 
 	public void detachProducer(Producer<T> producer) {
+		
+		logger.debug("Detaching producer " + producer);
+		
 		producersLock.lock();
 		try {
 			if (this.producers.contains(producer)) {
@@ -67,6 +76,9 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	}
 
 	public void detachConsumer(Consumer<T> consumer) {
+		
+		logger.debug("Detaching consumer " + consumer);
+		
 		consumersLock.lock();
 		try {
 			if (this.consumers.contains(consumer)) {
@@ -104,6 +116,7 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	}
 
 	public void start() {
+		logger.debug("Starting queue " + this);
 		try {
 			producersLock.lock();
 			try {
@@ -129,9 +142,11 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 		} finally {
 			producersLock.unlock();
 		}
+		logger.info("Queue " + this + " successfully started");
 	}
 
 	public void shutdown() {
+		logger.info("Shutting down queue " + this);
 		try {
 			producersLock.lock();
 			try {
@@ -157,6 +172,7 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 		} finally {
 			producersLock.unlock();
 		}
+		logger.info("Queue " + this + " successfully shutted down");
 	}
 
 	public boolean isAlive() {
