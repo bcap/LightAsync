@@ -1,7 +1,6 @@
 package com.github.bcap.lightasync;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,7 +14,7 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 
 	private static final Logger logger = LoggerFactory.getLogger(Queue.class);
 	
-	private List<Producer<T>> producers = new ArrayList<Producer<T>>();
+	private List<Producer<? extends T>> producers = new ArrayList<Producer<? extends T>>();
 	private List<Consumer<T>> consumers = new ArrayList<Consumer<T>>();
 
 	private ReentrantLock producersLock = new ReentrantLock();
@@ -28,16 +27,15 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 
 	public abstract Integer maxSize();
 
-	public void attachProducer(Producer<T> producer) {
+	public void attachProducer(Producer<? extends T> producer) {
 		
 		logger.debug("Attaching producer " + producer);
 		
-		if (this.isAlive())
-			this.startProducer(producer);
-
 		producersLock.lock();
 		try {
 			this.producers.add(producer);
+			if (this.isAlive())
+				this.startProducer(producer);
 		} finally {
 			producersLock.unlock();
 		}
@@ -47,18 +45,17 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 		
 		logger.debug("Attaching consumer " + consumer);
 		
-		if (this.isAlive())
-			this.startConsumer(consumer);
-
 		consumersLock.lock();
 		try {
 			this.consumers.add(consumer);
+			if (this.isAlive())
+				this.startConsumer(consumer);
 		} finally {
 			consumersLock.unlock();
 		}
 	}
 
-	public void detachProducer(Producer<T> producer) {
+	public void detachProducer(Producer<? extends T> producer) {
 		
 		logger.debug("Detaching producer " + producer);
 		
@@ -96,20 +93,16 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 	public List<Consumer<T>> getConsumers() {
 		consumersLock.lock();
 		try {
-			List<Consumer<T>> result = new ArrayList<Consumer<T>>(consumers.size());
-			Collections.copy(result, consumers);
-			return result;
+			return new ArrayList<Consumer<T>>(consumers);
 		} finally {
 			consumersLock.unlock();
 		}
 	}
 
-	public List<Producer<T>> getProducers() {
+	public List<Producer<? extends T>> getProducers() {
 		producersLock.lock();
 		try {
-			List<Producer<T>> result = new ArrayList<Producer<T>>(producers.size());
-			Collections.copy(result, producers);
-			return result;
+			return new ArrayList<Producer<? extends T>>(producers);
 		} finally {
 			producersLock.unlock();
 		}
@@ -125,7 +118,7 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 				if (!started) {
 					this.preStart();
 
-					for (Producer<T> producer : producers)
+					for (Producer<? extends T> producer : producers)
 						this.startProducer(producer);
 
 					for (Consumer<T> consumer : consumers)
@@ -155,7 +148,7 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 				if (!dead) {
 					this.preShutdown();
 
-					for (Producer<T> producer : producers)
+					for (Producer<? extends T> producer : producers)
 						this.stopProducer(producer);
 
 					for (Consumer<T> consumer : consumers)
@@ -195,11 +188,11 @@ public abstract class Queue<T> implements SimpleLifeCycle {
 
 	protected abstract void postShutdown();
 
-	protected abstract void startProducer(Producer<T> producer);
+	protected abstract void startProducer(Producer<? extends T> producer);
 
 	protected abstract void startConsumer(Consumer<T> consumer);
 
-	protected abstract void stopProducer(Producer<T> producer);
+	protected abstract void stopProducer(Producer<? extends T> producer);
 
 	protected abstract void stopConsumer(Consumer<T> consumer);
 	
