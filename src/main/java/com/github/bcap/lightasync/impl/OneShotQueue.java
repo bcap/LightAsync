@@ -40,18 +40,31 @@ public class OneShotQueue<T> extends Queue<T> {
 	}
 
 	protected void startConsumer(Consumer<T> consumer) {
+		
+		logger.debug("Starting consumer " + consumer);
+		
 		ConsumerThread thread = new ConsumerThread(consumer);
 		thread.startThread();
 		consumerThreads.add(thread);
+		
+		logger.debug("Consumer " + consumer + " successfully started, associated thread: " + thread.getName());
 	}
 
 	protected void startProducer(Producer<T> producer) {
+		
+		logger.debug("Starting producer " + producer);
+		
 		ProducerThread thread = new ProducerThread(producer);
 		thread.startThread();
 		producerThreads.add(thread);
+		
+		logger.debug("Producer " + producer + " successfully started, associated thread: " + thread.getName());
 	}
 
 	protected void stopConsumer(Consumer<T> consumer) {
+		
+		logger.debug("Stopping consumer " + consumer);
+		
 		ConsumerThread thread = null;
 		for (Iterator<ConsumerThread> it = consumerThreads.iterator(); it.hasNext() && thread == null;) {
 			ConsumerThread itThread = it.next();
@@ -60,9 +73,14 @@ public class OneShotQueue<T> extends Queue<T> {
 		}
 		thread.stopThread();
 		consumerThreads.remove(thread);
+		
+		logger.debug("Consumer " + consumer + " successfully stopped");
 	}
 
 	protected void stopProducer(Producer<T> producer) {
+		
+		logger.debug("Stopping producer " + producer);
+		
 		ProducerThread thread = null;
 		for (Iterator<ProducerThread> it = producerThreads.iterator(); it.hasNext() && thread == null;) {
 			ProducerThread itThread = it.next();
@@ -71,6 +89,8 @@ public class OneShotQueue<T> extends Queue<T> {
 		}
 		thread.stopThread();
 		producerThreads.remove(thread);
+		
+		logger.debug("Producer " + producer + " successfully stopped");
 	}
 
 	protected void preStart() {
@@ -133,12 +153,11 @@ public class OneShotQueue<T> extends Queue<T> {
 		}
 
 		public void run() {
-			running = true;
-
 			while (running) {
 				try {
 					QueueMessage<T> message = queue.poll(50, TimeUnit.MILLISECONDS);
 					if (message != null) {
+						logger.debug("Consuming message " + message);
 						try {
 							consumer.consume(message.getContent());
 						} catch (RuntimeException e) {
@@ -170,13 +189,13 @@ public class OneShotQueue<T> extends Queue<T> {
 		}
 
 		public void run() {
-			running = true;
-
 			finished = producer.finished();
 
 			while (running && !finished) {
 				try {
+					logger.debug("Calling produce method for producer " + producer);
 					T obj = producer.produce();
+					logger.debug("Putting a new message in the queue for the object " + obj);
 					queue.put(new QueueMessage<T>(obj));
 					finished = producer.finished();
 				} catch (InterruptedException e) {
@@ -188,8 +207,10 @@ public class OneShotQueue<T> extends Queue<T> {
 
 			running = false;
 
-			if (finished)
+			if (finished) {
+				logger.debug("Producer " + producer + " finished");
 				producerFinished(this);
+			}
 		}
 	}
 }
