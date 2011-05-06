@@ -1,44 +1,109 @@
 package com.github.bcap.lightasync;
 
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
+
+import com.github.bcap.lightasync.impl.OneShotQueue;
 
 public class OneShotQueueTest {
 
 	@Test
-	public void simpleTest() {
-		Queue<String> queue = Queue.createQueue();
-		Producer<String> producer = new TestProducer();
-		Consumer<String> consumer1 = new TestConsumer();
-		Consumer<String> consumer2 = new TestConsumer();
-
-		queue.attachProducer(producer);
-		queue.attachConsumer(consumer1);
-		queue.attachConsumer(consumer2);
+	public void simpleTest() throws InterruptedException {
+		
+		final int amount = 200;
+		final int producerAmount = 20;
+		final int consumerAmount = 15;
+		
+		OneShotQueue<String> queue = new OneShotQueue<String>();
+		List<TestProducer> producers = new ArrayList<TestProducer>();
+		List<TestConsumer> consumers = new ArrayList<TestConsumer>();
+		
+		for(int i = 0; i < producerAmount; i++) {
+			TestProducer producer = new TestProducer("producer" + i, amount);
+			producers.add(producer);
+			queue.attachProducer(producer);
+		}
+		
+		for(int i = 0; i < consumerAmount; i++) {
+			TestConsumer consumer = new TestConsumer();
+			consumers.add(consumer);
+			queue.attachConsumer(consumer);
+		}
+		
 		queue.start();
+		queue.waitExecution();
+		
+		List<String> consumed = new ArrayList<String>();
+		for (TestConsumer consumer : consumers) 
+			consumed.addAll(consumer.consumed);
+		
+		List<String> produced = new ArrayList<String>();
+		for (TestProducer producer : producers) 
+			produced.addAll(producer.produced);
+
+		assertEquals(amount * producerAmount, produced.size());
+		assertEquals(amount * producerAmount, consumed.size());
+
+		for(String consumedElement : consumed)
+			assertTrue(produced.contains(consumedElement));
+		
+		for(String producedElement : produced)
+			assertTrue(consumed.contains(producedElement));
+	}
+
+	private void waitFinish(List<TestConsumer> consumers) {
+		for(boolean finished = false; !finished;) {
+			finished = true;
+			for (TestConsumer consumer : consumers)
+				finished &= consumer.finished;
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 }
 
 class TestProducer implements Producer<String> {
 
-	private int produced = 0;
+	protected final int amount;
+	
+	protected final String name;
+	
+	protected List<String> produced = new ArrayList<String>();
 
-	public boolean finished() {
-		return produced >= 100;
+	public TestProducer(String name, int amount) {
+		this.name = name;
+		this.amount = amount;
+	}
+	
+	public boolean isFinished() {
+		return produced.size() >= amount;
 	}
 
 	public String produce() {
-		String element = "Element " + produced;
-		produced++;
+		String element = "Element " + produced.size() + " of producer " + name;
+		produced.add(element);
 		return element;
 	}
 }
 
 class TestConsumer implements Consumer<String> {
 
-	public void consume(String obj) {
+	protected boolean finished = false;
+	
+	protected List<String> consumed = new ArrayList<String>();
+	
+	public void consume(String string) {
+		consumed.add(string);
 	}
 
 	public void finished() {
+		this.finished = true;
 	}
 
 }

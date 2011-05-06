@@ -3,6 +3,7 @@ package com.github.bcap.lightasync.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -20,12 +21,20 @@ public class OneShotQueue<T> extends Queue<T> {
 	private LinkedBlockingQueue<QueueMessage<T>> queue;
 
 	private Integer maxSize;
-
+	
 	private List<ConsumerThread> consumerThreads = new ArrayList<ConsumerThread>();
 	private List<ProducerThread> producerThreads = new ArrayList<ProducerThread>();
+	
+	private CountDownLatch startLatch = new CountDownLatch(1);
+	private CountDownLatch finishLatch;
 
 	public OneShotQueue() {
 		this(null);
+	}
+	
+	public void waitExecution() throws InterruptedException {
+		startLatch.await();
+		finishLatch.await();
 	}
 
 	public OneShotQueue(Integer maxSize) {
@@ -98,7 +107,8 @@ public class OneShotQueue<T> extends Queue<T> {
 	}
 
 	protected void postStart() {
-
+		finishLatch = new CountDownLatch(consumerThreads.size());
+		startLatch.countDown();
 	}
 
 	protected void preShutdown() {
@@ -106,7 +116,7 @@ public class OneShotQueue<T> extends Queue<T> {
 	}
 
 	protected void postShutdown() {
-
+		finishLatch.countDown();
 	}
 
 	protected void producerFinished(ProducerThread producer) {
@@ -116,6 +126,7 @@ public class OneShotQueue<T> extends Queue<T> {
 		if(finished) {
 			for (ConsumerThread thread : consumerThreads)
 				thread.producersFinished = true;
+			
 		}
 	}
 
@@ -175,6 +186,7 @@ public class OneShotQueue<T> extends Queue<T> {
 				consumer.finished();
 
 			running = false;
+			finishLatch.countDown();
 		}
 	}
 
@@ -189,7 +201,7 @@ public class OneShotQueue<T> extends Queue<T> {
 		}
 
 		public void run() {
-			finished = producer.finished();
+			finished = producer.isFinished();
 
 			while (running && !finished) {
 				try {
@@ -197,7 +209,7 @@ public class OneShotQueue<T> extends Queue<T> {
 					T obj = producer.produce();
 					logger.debug("Putting a new message in the queue for the object " + obj);
 					queue.put(new QueueMessage<T>(obj));
-					finished = producer.finished();
+					finished = producer.isFinished();
 				} catch (InterruptedException e) {
 					logger.debug("Producer thread interrupted");
 				} catch (RuntimeException e) {
