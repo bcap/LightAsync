@@ -209,12 +209,12 @@ public class OneShotQueue<T> extends Queue<T> {
 					T obj = producer.produce();
 					logger.debug("Putting a new message in the queue for the object " + obj);
 					queue.put(new QueueMessage<T>(obj));
-					finished = producer.isFinished();
 				} catch (InterruptedException e) {
 					logger.debug("Producer thread interrupted");
 				} catch (RuntimeException e) {
 					logger.error("Producer threw an Exception", e);
 				}
+				finished = producer.isFinished();
 			}
 
 			running = false;
